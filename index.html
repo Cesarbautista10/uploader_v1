@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USB Programmer</title>
+</head>
+<body>
+    <h1>USB Programmer Interface</h1>
+
+    <button id="connectButton">Connect to Device</button>
+    <button id="detectButton">Detect Chip</button>
+    <button id="eraseButton">Erase Device</button>
+    <button id="flashButton">Flash Data</button>
+    <button id="verifyButton">Verify Data</button>
+
+    <script src="programmer.js"></script>
+    <script>
+        const programmer = new Programmer();
+
+        document.getElementById('connectButton').addEventListener('click', async () => {
+            try {
+                await programmer.connect();
+                alert('Device connected successfully');
+            } catch (error) {
+                alert('Error connecting to device: ' + error);
+            }
+        });
+
+        document.getElementById('detectButton').addEventListener('click', async () => {
+            try {
+                await programmer.detect();
+                alert('Chip detected: ' + programmer.chipname);
+            } catch (error) {
+                alert('Error detecting chip: ' + error);
+            }
+        });
+
+        document.getElementById('eraseButton').addEventListener('click', async () => {
+            try {
+                await programmer.erase();
+                alert('Device erased successfully');
+            } catch (error) {
+                alert('Error erasing device: ' + error);
+            }
+        });
+
+        document.getElementById('flashButton').addEventListener('click', async () => {
+            try {
+                await programmer.flashBin('filename.bin');
+                alert('Data flashed successfully');
+            } catch (error) {
+                alert('Error flashing data: ' + error);
+            }
+        });
+
+        document.getElementById('verifyButton').addEventListener('click', async () => {
+            try {
+                await programmer.verifyBin('filename.bin');
+                alert('Data verified successfully');
+            } catch (error) {
+                alert('Error verifying data: ' + error);
+            }
+        });
+    </script>
+</body>
+</html>
