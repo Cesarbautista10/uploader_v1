@@ -22,20 +22,28 @@ class Programmer {
             this.device = await navigator.usb.requestDevice({
                 filters: [{ vendorId: CH_VID, productId: CH_PID }]
             });
-
+    
             await this.device.open();
             console.log('Device connected:', this.device);
-
+    
             const config = this.device.configuration;
             this.interface = config.interfaces[0];
             await this.interface.claimInterface();
             this.endpointOut = this.interface.endpointOut;
             this.endpointIn = this.interface.endpointIn;
+    
+            // Ensure the device is fully opened before proceeding
+            if (this.device.opened) {
+                console.log('Device fully opened');
+            } else {
+                throw new Error('Failed to open the device');
+            }
         } catch (error) {
             console.error('Error connecting to device:', error);
             throw error;
         }
     }
+    
 
     async detect() {
         try {
