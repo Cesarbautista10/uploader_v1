@@ -12,6 +12,9 @@ const DETECT_CHIP_CMD_V2 = new Uint8Array([0xa1, 0x12, 0x00, 0x52, 0x11, 0x4d, 0
 class Programmer {
     constructor() {
         this.device = null;
+        this.interface = null;
+        this.endpointOut = null;
+        this.endpointIn = null;
     }
 
     async connect() {
@@ -19,10 +22,15 @@ class Programmer {
             this.device = await navigator.usb.requestDevice({
                 filters: [{ vendorId: CH_VID, productId: CH_PID }]
             });
+
             await this.device.open();
-            await this.device.selectConfiguration(1);
-            await this.device.claimInterface(0);
             console.log('Device connected:', this.device);
+
+            const config = this.device.configuration;
+            this.interface = config.interfaces[0];
+            await this.interface.claimInterface();
+            this.endpointOut = this.interface.endpointOut;
+            this.endpointIn = this.interface.endpointIn;
         } catch (error) {
             console.error('Error connecting to device:', error);
             throw error;
@@ -30,10 +38,6 @@ class Programmer {
     }
 
     async detect() {
-        if (!this.device) {
-            throw new Error('Device not connected');
-        }
-
         try {
             await this.sendCmd(DETECT_CHIP_CMD_V2);
             console.log('Chip detected:', this.chipname);
@@ -44,10 +48,6 @@ class Programmer {
     }
 
     async erase() {
-        if (!this.device) {
-            throw new Error('Device not connected');
-        }
-
         try {
             // Implement erase logic here
             console.log('Erased successfully');
@@ -58,10 +58,6 @@ class Programmer {
     }
 
     async flashBin(filename) {
-        if (!this.device) {
-            throw new Error('Device not connected');
-        }
-
         try {
             // Implement flashing logic here
             console.log('Flashed successfully');
@@ -72,10 +68,6 @@ class Programmer {
     }
 
     async verifyBin(filename) {
-        if (!this.device) {
-            throw new Error('Device not connected');
-        }
-
         try {
             // Implement verification logic here
             console.log('Verified successfully');
@@ -87,8 +79,8 @@ class Programmer {
 
     async sendCmd(cmd) {
         try {
-            await this.device.transferOut(1, cmd);
-            const result = await this.device.transferIn(2, 64);
+            await this.device.transferOut(this.endpointOut.endpointNumber, cmd);
+            const result = await this.device.transferIn(this.endpointIn.endpointNumber, 64);
             return result;
         } catch (error) {
             console.error('Error sending command:', error);
